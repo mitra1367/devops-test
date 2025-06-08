@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: risf-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: risf-nginx
+  template:
+    metadata:
+      labels:
+        app: risf-nginx
+    spec:
+      containers:
+      - name: risf-nginx
+        image: risf-nginx
+        ports:
+        - containerPort: 80
+        securityContext:
+          runAsNonRoot: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: risf-nginx-service
+spec:
+  selector:
+    app: risf-nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

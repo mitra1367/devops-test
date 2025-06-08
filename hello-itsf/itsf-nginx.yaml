@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itsf-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: itsf-nginx
+  template:
+    metadata:
+      labels:
+        app: itsf-nginx
+    spec:
+      containers:
+      - name: itsf-nginx
+        image: nginx:alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        securityContext:
+          runAsUser: 101
+          runAsNonRoot: true
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: html
+        - mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          name: conf
+        - mountPath: /var/cache/nginx
+          name: cache
+      volumes:
+      - name: html
+        persistentVolumeClaim:
+          claimName: itsf-pvc
+      - name: conf
+        configMap:
+          name: itsf-nginx-conf
+      - name: cache
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itsf-nginx-service
+spec:
+  selector:
+    app: itsf-nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
